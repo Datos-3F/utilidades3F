@@ -14,9 +14,10 @@ validador_paquetes <- function(paquetes) {
     } else {
       cat(i, "está instalado \n")
     }
+    
+    library(i, character.only = TRUE)
   }
   # borrar el listado de paquetes
-  require(paquetes)
   rm(paquetes)
 }
 

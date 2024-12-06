@@ -17,6 +17,7 @@ Utilidades3F tiene como objetivo centralizar un conjunto de funciones de uso fre
 
 
 # **Funciones disponibles**
+* **validador_paquetes()**: Nos permite utilizar un vector con los paquetes a utilizar para verificar que esten instalados y cargarlos. En caso de no estar instalados los instala.
 
 * **inventario_capas()**: Nos permite obtener un listado de las capas públicas disponibles en el [geoportal municipal](https://geoportal.tresdefebrero.gob.ar/).
 
@@ -38,7 +39,7 @@ Para instalar el paquete de utilidades3F es necesario primero contar con la libr
 
 ```sh
 install.packages("devtools")
-devtools::install_github("fsavio3f/utilidades3F")
+devtools::install_github("Datos-3F/utilidades3F")
 ```
 
 Una vez realizado este paso podremos comenzar a utilizar las funciones disponibles en el paquete.**¹**

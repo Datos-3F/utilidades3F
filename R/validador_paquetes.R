@@ -16,6 +16,7 @@ validador_paquetes <- function(paquetes) {
     }
   }
   # borrar el listado de paquetes
+  require(paquetes)
   rm(paquetes)
 }
 

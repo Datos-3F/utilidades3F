@@ -1,4 +1,3 @@
-
 diccionario_calles <- obtener_capa("callejero_normalizado") |> 
   sf::st_drop_geometry() |> 
   dplyr::mutate(nombre_simp = stringi::stri_trans_general(tolower(nombre_cal),"Latin-ASCII")) |>

@@ -13,11 +13,11 @@ tokens_similitud <- function(nombre_org, nombres_normalizados) {
   nombre_org <- stringi::stri_trans_general(tolower(nombre_org),"Latin-ASCII")
   tokens_org <- unlist(stringr::str_split(nombre_org, " "))
   
-  # asignación de puntaje
+  # asignacion de puntaje
   mejor_empareja <- ""
   mejor_puntaje <- -1
   
-  # revisión de nombres normalizados
+  # revision de nombres normalizados
   for (nombre_norm in nombres_normalizados) {
     # tokenizacion de nombres correctos
     token_norm <- unlist(stringr::str_split(nombre_norm, " "))
@@ -26,17 +26,9 @@ tokens_similitud <- function(nombre_org, nombres_normalizados) {
     tokens_comunes <- intersect(tolower(tokens_org), tolower(token_norm))
     
     # calculo de similitud
-    puntaje_tokens <- length(tokens_comunes) / length(token_norm)
+    puntaje <- length(tokens_comunes) / length(token_norm)
     
-    # Cálculo de similitud basado en distancia de cadena (Levenshtein)
-    distancia <- stringdist::stringdist(nombre_org, nombre_norm, method = "lv")
-    puntaje_distancia <- 1 / (1 + distancia) 
-    
-    #puntaje final
-    
-    puntaje <- (puntaje_tokens + puntaje_distancia) / 2
-    
-    # actualización de mejor emparejamiento
+    # actualizacion de mejor emparejamiento
     if (puntaje > mejor_puntaje) {
       mejor_empareja <- nombre_norm
       mejor_puntaje <- puntaje
@@ -48,12 +40,12 @@ tokens_similitud <- function(nombre_org, nombres_normalizados) {
 
 #' normalizar_calles
 #'
-#' Permite normalizar los nombres de calles de una base de datos para el municipio de Tres de Febrero
+#' geolocalizar direcciónes dentro de una base de datos
 #' @param df base de datos
 #' @param nombre_calles columna que contenga los nombres de calles
 #' @return devuelve la base de datos con una columna adicional con los nombres de calles normalizados
 #' @examples
-#' nombre_normalizados <- normalizar_calles(df, nombre_calles = "calle_nombre");
+#' nombre_normalizados <- normalizar_calles(df, nombre_calles = "calle_nom");
 #' @export
 
 normalizar_calles <- function(df, nombre_calles) {

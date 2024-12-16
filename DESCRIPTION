@@ -15,6 +15,7 @@ Collate:
     'normalizar_localidades.R'
     'ARBA.R'
     'normalizar_calles.R'
+	'validador_paquetes.R'
 Imports:
     sf,
     ows4R,

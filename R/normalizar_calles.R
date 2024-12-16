@@ -1,6 +1,5 @@
-# Obtengo el diccionario de calles extraído desde el geoportal municipal
 
-diccionario_calles <- obtener_capa("relevamiento_callejero") |> 
+diccionario_calles <- obtener_capa("callejero_normalizado") |> 
   sf::st_drop_geometry() |> 
   dplyr::mutate(nombre_simp = stringi::stri_trans_general(tolower(nombre_cal),"Latin-ASCII")) |>
   dplyr::select(nombre_simp, nombre_cal) |>

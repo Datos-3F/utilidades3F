@@ -1,12 +1,12 @@
-library(tidyverse)
-library(stringdist)
+{library(tidyverse)
+library(stringdist)}
 wd <- dirname(rstudioapi::getSourceEditorContext()$path)
 setwd(wd)
 
 
 
 
-{calles_ejemplo <- read.csv("direcciones_pruebas.csv")
+{calles_ejemplo <- read.csv("man/direcciones_pruebas.csv")
 sample <- dplyr::sample_n(calles_ejemplo, 500)
 sample_3f <- calles_ejemplo %>% filter(calles_ejemplo$partido == "Tres de Febrero") %>% sample_n(500)
 }

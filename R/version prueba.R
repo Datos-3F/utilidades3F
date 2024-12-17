@@ -38,7 +38,6 @@ tokens_similitud <- function(nombre_org, nombres_normalizados) {
     
     #puntaje final
     puntaje <- (puntaje_tokens + puntaje_distancia) / 2
-    print(puntaje_distancia)
     
     
     # actualización de mejor emparejamiento
@@ -47,6 +46,7 @@ tokens_similitud <- function(nombre_org, nombres_normalizados) {
       mejor_puntaje <- puntaje
     }
   }
+  print(c(mejor_empareja, mejor_puntaje))
   return(mejor_empareja)
 }
 

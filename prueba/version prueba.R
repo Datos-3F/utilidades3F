@@ -12,8 +12,8 @@ diccionario_calles <- utilidades3F::obtener_capa("callejero_normalizado") |>
 
 # tokenizacion y emparejamiento
 tokens_similitud <- function(nombre_org, nombres_normalizados) {
-  # tokenizacion de nombres originales
-  nombre_org <- stringi::stri_trans_general(tolower(nombre_org),"Latin-ASCII")
+  # tokenización de nombres originales
+  nombre_org <- stringi::stri_trans_general(tolower(nombre_org), "Latin-ASCII")
   tokens_org <- unlist(stringr::str_split(nombre_org, " "))
   
   # asignación de puntaje
@@ -22,32 +22,31 @@ tokens_similitud <- function(nombre_org, nombres_normalizados) {
   
   # revisión de nombres normalizados
   for (nombre_norm in nombres_normalizados) {
-    # tokenizacion de nombres correctos
+    # tokenización de nombres correctos
     token_norm <- unlist(stringr::str_split(nombre_norm, " "))
     
-    # encontrar token compartidos entre los nombres originales y normalizados
+    # encontrar tokens compartidos entre los nombres originales y normalizados
     tokens_comunes <- intersect(tolower(tokens_org), tolower(token_norm))
     
-    # calculo de similitud
+    # cálculo de similitud
     puntaje_tokens <- length(tokens_comunes) / length(token_norm)
     
-    # Cálculo de similitud basado en distancia de cadena (Levenshtein)
+    # cálculo de similitud basado en distancia de cadena (Levenshtein)
     distancia <- stringdist::stringdist(nombre_org, nombre_norm, method = "lv")
-    
     puntaje_distancia <- 1 / (1 + distancia) 
     
-    #puntaje final
-    puntaje <- (puntaje_tokens + puntaje_distancia) / 2
+    # puntaje final
+    puntaje <- (puntaje_tokens + (puntaje_distancia*0.2)) / 2
     
-    
-    # actualización de mejor emparejamiento
+    # actualización del mejor emparejamiento y puntaje
     if (puntaje > mejor_puntaje) {
       mejor_empareja <- nombre_norm
       mejor_puntaje <- puntaje
     }
   }
-  print(c(mejor_empareja, mejor_puntaje))
-  return(mejor_empareja)
+  
+  # Devolver una lista con el mejor emparejamiento y el mejor puntaje
+  return(list(mejor_empareja = mejor_empareja, mejor_puntaje = mejor_puntaje))
 }
 
 
@@ -63,7 +62,13 @@ tokens_similitud <- function(nombre_org, nombres_normalizados) {
 
 normalizar_calles <- function(df, nombre_calles) {
   df <- df |>
-    dplyr::rowwise()|>
-    dplyr::mutate(nombre_normalizado = tokens_similitud(!!dplyr::sym(nombre_calles), diccionario_calles$nombre_simp))
+    dplyr::rowwise() |>
+    dplyr::mutate(
+      resultado = list(tokens_similitud(!!dplyr::sym(nombre_calles), diccionario_calles$nombre_simp)),
+      nombre_normalizado = resultado$mejor_empareja,
+      puntaje_normalizado = resultado$mejor_puntaje
+    ) |>
+    dplyr::select(-resultado) # Elimina la columna temporal 'resultado'
+  
   return(df)
-}  
+}

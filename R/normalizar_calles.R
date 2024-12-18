@@ -35,6 +35,8 @@ tokens_similitud <- function(nombre_org, nombres_normalizados) {
       mejor_puntaje <- puntaje
     }
   }
+  print(mejor_puntaje)
+  
   return(mejor_empareja)
 }
 

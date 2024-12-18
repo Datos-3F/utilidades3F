@@ -1,15 +1,12 @@
 {library(tidyverse)
-library(stringdist)}
-
-
+library(stringdist)
 
 library(caret)          # For training/testing models
 library(randomForest)   # Random Forest implementation
 library(pROC)           # For ROC-AUC evaluation
-library(dplyr)  
+library(dplyr)}  
 
 wd <- dirname(rstudioapi::getSourceEditorContext()$path)
-
 setwd(wd)
 
 {calles_ejemplo <- read.csv("direcciones_pruebas.csv")

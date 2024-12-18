@@ -34,18 +34,20 @@ tokens_similitud <- function(nombre_org, nombres_normalizados) {
   
   # revisión de nombres normalizados
   if(saltea_token == FALSE){   
-    for (nombre_norm in nombres_normalizados) {
+    for (actual in 1:nrow(nombres_comunes)) {
       # tokenización de nombres correctos
-      token_norm <- unlist(stringr::str_split(nombre_norm, " "))
+      token_norm <- unlist(stringr::str_split(nombres_comunes$`nombre simplificado`[actual], " "))
       
       # encontrar tokens compartidos entre los nombres originales y normalizados
-      tokens_comunes <- intersect(tolower(tokens_org), tolower(token_norm))
+      tokens_en_comun <- intersect(tolower(tokens_org), tolower(token_norm))
       
       # cálculo de similitud
-      puntaje_tokens <- length(tokens_comunes) / length(token_norm)
+      puntaje_tokens <- length(tokens_en_comun) / length(token_norm)
       
       # cálculo de similitud basado en distancia de cadena (Levenshtein)
-      distancia <- stringdist::stringdist(nombre_org, nombre_norm, method = "lv")
+      distancia_simp <- stringdist::stringdist(nombre_org, nombres_comunes$`nombre simplificado`[actual], method = "lv")
+      distancia_comp <- stringdist::stringdist(nombre_org, nombres_comunes$nombre_completo[actual], method = "lv")
+      distancia <- ifelse(distancia_comp < distancia_simp, distancia_comp, distancia_simp)
       puntaje_distancia <- 1 / (1 + distancia) 
       
       # puntaje final
@@ -53,7 +55,7 @@ tokens_similitud <- function(nombre_org, nombres_normalizados) {
       
       # actualización del mejor emparejamiento y puntaje
       if (puntaje > mejor_puntaje) {
-        mejor_empareja <- nombre_norm
+        mejor_empareja <- nombres_comunes$nombre_completo[actual]
         mejor_puntaje <- puntaje
         puntaje_token <- puntaje_tokens
         puntaje_distancia <- puntaje_distancia
@@ -64,7 +66,8 @@ tokens_similitud <- function(nombre_org, nombres_normalizados) {
   
   # Devolver una lista con el mejor emparejamiento y el mejor puntaje
   print(puntaje_token)
-  return(list(mejor_empareja = mejor_empareja, mejor_puntaje = mejor_puntaje, puntaje_token = puntaje_token, puntaje_distancia = puntaje_distancia))
+  return(list(mejor_empareja = mejor_empareja, mejor_puntaje = mejor_puntaje, puntaje_token = puntaje_token, 
+              puntaje_distancia = puntaje_distancia, uso_comunes = saltea_token))
 }
 
 
@@ -87,7 +90,8 @@ normalizar_calles <- function(df, nombre_calles, debug = FALSE) {
         nombre_normalizado = resultado$mejor_empareja,
         puntaje_mejor = resultado$mejor_puntaje,
         puntaje_distancia = resultado$puntaje_distancia,
-        puntaje_tokens = resultado$puntaje_token
+        puntaje_tokens = resultado$puntaje_token,
+        uso_comunes = resultado$uso_comunes
       ) |>
       dplyr::ungroup() |>
       dplyr::select(-resultado) # Elimina la columna temporal 'resultado'

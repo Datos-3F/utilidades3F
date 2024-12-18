@@ -42,11 +42,15 @@ tokens_similitud <- function(nombre_org, nombres_normalizados) {
     if (puntaje > mejor_puntaje) {
       mejor_empareja <- nombre_norm
       mejor_puntaje <- puntaje
+      puntaje_token <- puntaje_tokens
+      puntaje_distancia <- puntaje_distancia
     }
   }
   
+  
   # Devolver una lista con el mejor emparejamiento y el mejor puntaje
-  return(list(mejor_empareja = mejor_empareja, mejor_puntaje = mejor_puntaje))
+  print(puntaje_token)
+  return(list(mejor_empareja = mejor_empareja, mejor_puntaje = mejor_puntaje, puntaje_token = puntaje_token, puntaje_distancia = puntaje_distancia))
 }
 
 
@@ -60,15 +64,28 @@ tokens_similitud <- function(nombre_org, nombres_normalizados) {
 #' nombre_normalizados <- normalizar_calles(df, nombre_calles = "calle_nombre");
 #' @export
 
-normalizar_calles <- function(df, nombre_calles) {
-  df <- df |>
-    dplyr::rowwise() |>
-    dplyr::mutate(
-      resultado = list(tokens_similitud(!!dplyr::sym(nombre_calles), diccionario_calles$nombre_simp)),
-      nombre_normalizado = resultado$mejor_empareja,
-      puntaje_normalizado = resultado$mejor_puntaje
-    ) |>
-    dplyr::select(-resultado) # Elimina la columna temporal 'resultado'
-  
+normalizar_calles <- function(df, nombre_calles, debug = FALSE) {
+  if (debug == TRUE) {
+    df <- df |>
+      dplyr::rowwise() |>
+      dplyr::mutate(
+        resultado = list(tokens_similitud(!!dplyr::sym(nombre_calles), diccionario_calles$nombre_simp)),
+        nombre_normalizado = resultado$mejor_empareja,
+        puntaje_mejor = resultado$mejor_puntaje,
+        puntaje_distancia = resultado$puntaje_distancia,
+        puntaje_tokens = resultado$puntaje_token
+      ) |>
+      dplyr::ungroup() |>
+      dplyr::select(-resultado) # Elimina la columna temporal 'resultado'
+  } else {
+    df <- df |>
+      dplyr::rowwise() |>
+      dplyr::mutate(
+        resultado = list(tokens_similitud(!!dplyr::sym(nombre_calles), diccionario_calles$nombre_simp))
+      ) |>
+      dplyr::ungroup() |>
+      dplyr::select(-resultado) # Elimina la columna temporal 'resultado'
+  }
   return(df)
 }
+

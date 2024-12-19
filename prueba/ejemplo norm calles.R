@@ -18,7 +18,14 @@ sample_3f <- calles_ejemplo %>%
 }
 
 
-ejemplo <- normalizar_calles(sample_3f, "calle", debug = TRUE)
+sample_3f_1000n <- calles_ejemplo %>%
+  filter(calles_ejemplo$partido == "Tres de Febrero") %>% sample_n(1000)
+
+
+
+ejemplo <- normalizar_calles(sample_3f, "calle", debug = TRUE, )
+ejemplo_n1000 <- normalizar_calles(sample_3f_1000n, "calle", debug = TRUE)
+
 
 writexl::write_xlsx(ejemplo,"train_normalizacion.xlsx")
 train <- readxl::read_excel("train_normalizacion.xlsx") %>% 

@@ -3,18 +3,14 @@
 diccionario_calles <- utilidades3F::obtener_capa("callejero_normalizado") |> 
   sf::st_drop_geometry() |> 
   dplyr::mutate(nombre_simp = stringi::stri_trans_general(tolower(nombre_cal),"Latin-ASCII")) |>
-  dplyr::select(nombre_simp, nombre_cal) |>
   dplyr::group_by(nombre_simp) |>
-  dplyr::summarise(nombre_cal = dplyr::first(nombre_cal)) |>
   dplyr::filter(!is.na(nombre_cal))
 
 wd <- dirname(rstudioapi::getSourceEditorContext()$path)
 setwd(wd)
-nombres_comunes <- readxl::read_excel("nombre de calles comunes.xlsx", col_names = TRUE)
-nombres_comunes$`nombre simplificado` <- stringi::stri_trans_general(tolower(nombres_comunes$`nombre simplificado`), "Latin-ASCII")
 
 # tokenizacion y emparejamiento
-tokens_similitud <- function(nombre_org, nombres_normalizados) {
+tokens_similitud <- function(nombre_org, nombres_normalizados, puntaje_limite) {
   # tokenización de nombres originales
   nombre_org <- stringi::stri_trans_general(tolower(nombre_org), "Latin-ASCII")
   tokens_org <- unlist(stringr::str_split(nombre_org, " "))
@@ -26,17 +22,14 @@ tokens_similitud <- function(nombre_org, nombres_normalizados) {
   puntaje_distancia <- -1
   saltea_token <- TRUE
   
-  mejor_empareja <- ifelse(nombre_org %in% nombres_comunes$`nombre simplificado`, 
-                           nombres_comunes$nombre_completo[which(nombres_comunes$`nombre simplificado` == nombre_org)], saltea_token <- FALSE)
-
-  
-  
+  mejor_empareja <- ifelse(nombre_org %in% diccionario_calles$nombre_comun, 
+                           diccionario_calles$nombre_cal[which(nombres_comunes$`nombre simplificado` == nombre_org)], saltea_token <- FALSE)
   
   # revisión de nombres normalizados
   if(saltea_token == FALSE){   
-    for (actual in 1:nrow(nombres_comunes)) {
+    for (actual in 1:nrow(diccionario_calles)) {
       # tokenización de nombres correctos
-      token_norm <- unlist(stringr::str_split(nombres_comunes$`nombre simplificado`[actual], " "))
+      token_norm <- unlist(stringr::str_split(diccionario_calles$nombre_comun[actual], " "))
       
       # encontrar tokens compartidos entre los nombres originales y normalizados
       tokens_en_comun <- intersect(tolower(tokens_org), tolower(token_norm))
@@ -45,10 +38,17 @@ tokens_similitud <- function(nombre_org, nombres_normalizados) {
       puntaje_tokens <- length(tokens_en_comun) / length(token_norm)
       
       # cálculo de similitud basado en distancia de cadena (Levenshtein)
-      distancia_simp <- stringdist::stringdist(nombre_org, nombres_comunes$`nombre simplificado`[actual], method = "lv")
-      distancia_comp <- stringdist::stringdist(nombre_org, nombres_comunes$nombre_completo[actual], method = "lv")
+      nombre_simplificado <- stringi::stri_trans_general(tolower(diccionario_calles$nombre_comun[actual]), "Latin-ASCII")
+      
+      distancia_simp <- stringdist::stringdist(nombre_org, nombre_simplificado, method = "lv")
+      distancia_comp <- stringdist::stringdist(nombre_org, diccionario_calles$nombre_simp, method = "lv")
       distancia <- ifelse(distancia_comp < distancia_simp, distancia_comp, distancia_simp)
       puntaje_distancia <- 1 / (1 + distancia) 
+      
+      if(puntaje_distancia <= puntaje_limite & puntaje_distancia > 0){
+        palabras_faltantes <- distinct(nombre_org, diccionario_calles$nombre_simp[actual])
+        distancia <- text2vec::itoken()
+      }
       
       # puntaje final
       puntaje <- (puntaje_tokens + (puntaje_distancia*0.2)) / 2
@@ -81,12 +81,12 @@ tokens_similitud <- function(nombre_org, nombres_normalizados) {
 #' nombre_normalizados <- normalizar_calles(df, nombre_calles = "calle_nombre");
 #' @export
 
-normalizar_calles <- function(df, nombre_calles, debug = FALSE) {
+normalizar_calles <- function(df, nombre_calles, debug = FALSE, puntaje_limite = 0.09) {
   if (debug == TRUE) {
     df <- df |>
       dplyr::rowwise() |>
       dplyr::mutate(
-        resultado = list(tokens_similitud(!!dplyr::sym(nombre_calles), diccionario_calles$nombre_simp)),
+        resultado = list(tokens_similitud(!!dplyr::sym(nombre_calles), diccionario_calles$nombre_simp, puntaje_limite)),
         nombre_normalizado = resultado$mejor_empareja,
         puntaje_mejor = resultado$mejor_puntaje,
         puntaje_distancia = resultado$puntaje_distancia,
